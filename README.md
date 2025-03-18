@@ -27,7 +27,7 @@ The objective of this project is to build an API that enables users to:
 #### `messages` Table
 | Column       | Type          | Constraints          |
 |-------------|--------------|----------------------|
-| `id`        | UUID (PK)     | Primary Key         |
+| `id`        | SERIAL (PK)     | Primary Key         |
 | `sender_id` | VARCHAR       | Not Null            |
 | `receiver_id` | VARCHAR     | Not Null            |
 | `content`   | TEXT          | Not Null            |
@@ -47,17 +47,18 @@ The objective of this project is to build an API that enables users to:
 _Response:_
 ```json
 {
-  "status": "Message queued"
+  "message": "Message sent to queue"
 }
 ```
 
 #### 2️⃣ Retrieve Conversation History
 **GET** `/messages?user1=user123&user2=user456`
+
 _Response:_
 ```json
 [
   {
-    "message_id": "msg001",
+    "id": 1,
     "sender_id": "user123",
     "receiver_id": "user456",
     "content": "Hey!",
@@ -69,6 +70,7 @@ _Response:_
 
 #### 3️⃣ Mark a Message as Read
 **PATCH** `/messages/{message_id}/read`
+
 _Response:_
 ```json
 {
@@ -76,10 +78,14 @@ _Response:_
 }
 ```
 
+## Prerequisites
+
+### Docker and Docker Compose
+
 ## Setup Instructions
 
 ### 1️⃣ Run Services with Docker Compose
-Ensure `docker-compose.yml` is correctly set up and then run:
+Clone the repository and ensure `docker-compose.yml` is correctly set up and then run:
 ```sh
 docker-compose up --build
 ```
@@ -94,9 +100,16 @@ docker ps
 ```sh
 docker exec -it postgres psql -U postgres -d messaging
 ```
-List all tables:
+Create message tables:
 ```sql
-\dt
+CREATE TABLE messages (
+    id SERIAL PRIMARY KEY,
+    sender_id VARCHAR(255) NOT NULL,
+    receiver_id VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read BOOLEAN DEFAULT FALSE
+);
 ```
 
 ### 4️⃣ Create RabbitMQ Queue
@@ -109,6 +122,25 @@ rabbitmqadmin declare queue name=message_queue durable=true
 ### 5️⃣ Test API Using Postman
 - Import the provided API request examples into Postman.
 - Send a message, retrieve conversation history, and mark messages as read.
+
+Sent Messages Curl Request
+------------------------------
+curl --location 'http://ip-address:8080/messages' \
+--header 'Content-Type: application/json' \
+--data '{
+           "sender_id": "user123",
+           "content": "Hello, how are you?"
+         }'
+
+Get Conversation History Curl Request
+----------------------------------------
+curl --location 'http://ip-address:8080/messages?user1=user123' \
+--header 'Content-Type: application/json'
+
+Change Message Status Curl Request
+-----------------------------------
+curl --location --request PATCH 'http://ip-address:8080/messages/1/read' \
+--header 'Content-Type: application/json'
 
 ---
 This document provides a comprehensive overview of the messaging API, ensuring a smooth setup and testing process. 🚀
