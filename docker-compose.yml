@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api   # Points to the api/ directory
+      dockerfile: Dockerfile  # Uses the Dockerfile inside api/
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app_network
+
+  worker:
+    build:
+      context: ./worker   # Points to the worker/ directory
+      dockerfile: Dockerfile  # Uses the Dockerfile inside worker/
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - app_network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: messaging
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: adminpassword
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app_network
+
+networks:
+  app_network:  # Ensures all services communicate within the same network
+    driver: bridge
+
+volumes:
+  postgres_data:
+  rabbitmq_data:

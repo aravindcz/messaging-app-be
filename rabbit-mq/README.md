@@ -1,0 +1,1 @@
+Once the intial infrastructure has been setup based on the docker compose we just need to create a queue named "message_queue" that can be created either using ui or from the infra automation scripts itself using "rabbitmqadmin declare queue name=message_queue durable=true"
