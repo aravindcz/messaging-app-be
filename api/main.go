@@ -115,6 +115,17 @@ func getMessages(c *gin.Context) {
 		return
 	}
 
+        // Ensure both user1 and user2 are numeric
+        if _, err := strconv.Atoi(user1); err != nil {
+                c.JSON(http.StatusBadRequest, gin.H{"message": "user1 must be a number"})
+                return
+        }
+
+        if _, err := strconv.Atoi(user2); err != nil {
+                c.JSON(http.StatusBadRequest, gin.H{"message": "user2 must be a number"})
+                return
+}
+
         rows, err := db.Query(`
                 SELECT id, sender_id, receiver_id, content, timestamp, read 
                 FROM messages 
