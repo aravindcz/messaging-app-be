@@ -121,7 +121,7 @@ CREATE TABLE messages (
 Inside the RabbitMQ container:
 ```sh
 docker exec -it rabbitmq bash
-rabbitmqadmin declare queue name=message_queue durable=true
+rabbitmqadmin -u admin -p adminpassword declare queue name=message_queue durable=true
 ```
 
 ### 5️⃣ Test API Using Postman
