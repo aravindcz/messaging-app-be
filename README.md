@@ -123,6 +123,13 @@ CREATE INDEX idx_sender_timestamp ON messages (sender_id, timestamp); -- Index o
 CREATE INDEX idx_receiver_timestamp ON messages (receiver_id, timestamp); -- Index on receiver_id and timestamp
 ```
 
+Creating separate indexes on (sender_id, timestamp) and (receiver_id, timestamp) improves:
+
+🚀 Query speed for fetching sent/received messages
+⏳ Sorting efficiency without extra computation
+📊 Performance of time-based filtering
+🔄 Scalability as the messaging system grows
+
 ### 4️⃣ Create RabbitMQ Queue
 Inside the RabbitMQ container:
 ```sh
