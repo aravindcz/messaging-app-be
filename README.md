@@ -116,6 +116,12 @@ CREATE TABLE messages (
     read BOOLEAN DEFAULT FALSE
 );
 ```
+```sql
+
+CREATE INDEX idx_sender_timestamp ON messages (sender_id, timestamp); -- Index on sender_id and timestamp
+
+CREATE INDEX idx_receiver_timestamp ON messages (receiver_id, timestamp); -- Index on receiver_id and timestamp
+```
 
 ### 4️⃣ Create RabbitMQ Queue
 Inside the RabbitMQ container:
