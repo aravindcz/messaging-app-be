@@ -145,7 +145,7 @@ func getMessages(c *gin.Context) {
 func markMessageAsRead(c *gin.Context) {
         messageID := c.Param("message_id")
 
-        id, Interr := strconv.Atoi(messageID)
+        _, Interr := strconv.Atoi(messageID)
         if Interr != nil {
                 c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid message_id"})
                 return
