@@ -6,6 +6,7 @@ import (
         "log"
         "net/http"
         "os"
+        "strconv"
 
         "github.com/gin-gonic/gin"
         _ "github.com/lib/pq"
@@ -144,8 +145,8 @@ func getMessages(c *gin.Context) {
 func markMessageAsRead(c *gin.Context) {
         messageID := c.Param("message_id")
 
-        id, err := strconv.Atoi(messageID)
-        if err != nil {
+        id, Interr := strconv.Atoi(messageID)
+        if Interr != nil {
                 c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid message_id"})
                 return
         }
