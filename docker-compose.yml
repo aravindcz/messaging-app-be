@@ -5,6 +5,7 @@ services:
     build:
       context: ./api   # Points to the api/ directory
       dockerfile: Dockerfile  # Uses the Dockerfile inside api/
+    restart: always
     ports:
       - "8080:8080"
     depends_on:
@@ -20,6 +21,7 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+    restart: always
     networks:
       - app_network
 

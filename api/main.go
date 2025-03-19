@@ -21,9 +21,9 @@ var (
 // Message struct
 type Message struct {
         ID         int    `json:"id"`
-        SenderID   string `json:"sender_id"`
-        ReceiverID string `json:"receiver_id"`
-        Content    string `json:"content"`
+        SenderID   int `json:"sender_id" binding:"required"`
+        ReceiverID int `json:"receiver_id" binding:"required"`
+        Content    string `json:"content" binding:"required"`
         Timestamp  string `json:"timestamp"`
         Read       bool   `json:"read"`
 }
@@ -62,14 +62,14 @@ func main() {
 func sendMessage(c *gin.Context) {
         var msg Message
         if err := c.ShouldBindJSON(&msg); err != nil {
-                c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+                c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request payload"})
                 return
         }
 
         ch, err := rmq.Channel()
         if err != nil {
                 log.Println("Failed to open channel:", err)
-                c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+                c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
                 return
         }
         defer ch.Close()
@@ -78,7 +78,7 @@ func sendMessage(c *gin.Context) {
         q, err := ch.QueueDeclare("message_queue", true, false, false, false, nil)
         if err != nil {
                 log.Println("Queue declaration failed:", err)
-                c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+                c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
                 return
         }
 
@@ -90,7 +90,7 @@ func sendMessage(c *gin.Context) {
         })
         if err != nil {
                 log.Println("Failed to publish message:", err)
-                c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send message"})
+                c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to send message"})
                 return
         }
 
@@ -99,8 +99,20 @@ func sendMessage(c *gin.Context) {
 
 // Get Conversation History
 func getMessages(c *gin.Context) {
-        user1 := c.Query("user1")
-        user2 := c.Query("user2")
+	// Check if both user1 and user2 parameters exist in the request
+	user1, user1Exists := c.GetQuery("user1")
+	user2, user2Exists := c.GetQuery("user2")
+
+	if !user1Exists || !user2Exists {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Both user1 and user2 query parameters are required"})
+		return
+	}
+
+	// Ensure values are not empty
+	if user1 == "" || user2 == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Both user1 and user2 must have valid values"})
+		return
+	}
 
         rows, err := db.Query(`
                 SELECT id, sender_id, receiver_id, content, timestamp, read 
@@ -109,7 +121,7 @@ func getMessages(c *gin.Context) {
                    OR (sender_id = $2 AND receiver_id = $1) 
                 ORDER BY timestamp ASC`, user1, user2)
         if err != nil {
-                c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+                c.JSON(http.StatusInternalServerError, gin.H{"message": "Database error"})
                 return
         }
         defer rows.Close()
@@ -132,9 +144,15 @@ func getMessages(c *gin.Context) {
 func markMessageAsRead(c *gin.Context) {
         messageID := c.Param("message_id")
 
+        id, err := strconv.Atoi(messageID)
+        if err != nil {
+                c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid message_id"})
+                return
+        }
+
         _, err := db.Exec("UPDATE messages SET read = true WHERE id = $1", messageID)
         if err != nil {
-                c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+                c.JSON(http.StatusInternalServerError, gin.H{"message": "Database error"})
                 return
         }
 

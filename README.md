@@ -27,9 +27,9 @@ The objective of this project is to build an API that enables users to:
 #### `messages` Table
 | Column       | Type          | Constraints          |
 |-------------|--------------|----------------------|
-| `id`        | SERIAL (PK)     | Primary Key         |
-| `sender_id` | VARCHAR       | Not Null            |
-| `receiver_id` | VARCHAR     | Not Null            |
+| `id`        | SERIAL INTEGER (PK)     | Primary Key         |
+| `sender_id` | INTEGER       | Not Null            |
+| `receiver_id` | INTEGER     | Not Null            |
 | `content`   | TEXT          | Not Null            |
 | `timestamp` | TIMESTAMP     | Default: Now()      |
 | `read`      | BOOLEAN       | Default: False      |
@@ -39,8 +39,8 @@ The objective of this project is to build an API that enables users to:
 **POST** `/messages`
 ```json
 {
-  "sender_id": "user123",
-  "receiver_id": "user456",
+  "sender_id": 100,
+  "receiver_id": 250,
   "content": "Hello, how are you?"
 }
 ```
@@ -52,24 +52,24 @@ _Response:_
 ```
 
 #### 2️⃣ Retrieve Conversation History
-**GET** `/messages?user1=user123&user2=user456`
+**GET** `/messages?user1=100&user2=250`
 
 _Response:_
 ```json
 [
   {
     "id": 1,
-    "sender_id": "user123",
-    "receiver_id": "user456",
-    "content": "Hey!",
+    "sender_id": 100,
+    "receiver_id": 250,
+    "content": "Hello, how are you?",
     "timestamp": "2024-03-13T10:00:00Z",
-    "read": true
+    "read": false
   }
 ]
 ```
 
 #### 3️⃣ Mark a Message as Read
-**PATCH** `/messages/{message_id}/read`
+**PATCH** `/messages/{message_id}/read` 
 
 _Response:_
 ```json
@@ -81,6 +81,11 @@ _Response:_
 ## Prerequisites
 
 ### Docker and Docker Compose
+```sh
+sudo apt update
+sudo apt install docker.io -y
+sudo apt install docker-compose -y
+```
 
 ## Setup Instructions
 
@@ -104,8 +109,8 @@ Create message tables:
 ```sql
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
-    sender_id VARCHAR(255) NOT NULL,
-    receiver_id VARCHAR(255) NOT NULL,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     read BOOLEAN DEFAULT FALSE
@@ -128,13 +133,14 @@ Sent Messages Curl Request
 curl --location 'http://ip-address:8080/messages' \
 --header 'Content-Type: application/json' \
 --data '{
-           "sender_id": "user123",
+           "sender_id": 100,
+           "reciever_id": 250,
            "content": "Hello, how are you?"
          }'
 
 Get Conversation History Curl Request
 ----------------------------------------
-curl --location 'http://ip-address:8080/messages?user1=user123' \
+curl --location 'http://ip-address:8080/messages?user1=100&user2=250' \
 --header 'Content-Type: application/json'
 
 Change Message Status Curl Request

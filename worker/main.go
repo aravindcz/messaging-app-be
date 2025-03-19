@@ -11,8 +11,8 @@ import (
 
 // Message struct
 type Message struct {
-        SenderID   string `json:"sender_id"`
-        ReceiverID string `json:"receiver_id"`
+        SenderID   int `json:"sender_id"`
+        ReceiverID int `json:"receiver_id"`
         Content    string `json:"content"`
 }
 
